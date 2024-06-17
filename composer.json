@@ -1,0 +1,26 @@
+{
+    "name": "dvc/contao-async-pagination",
+    "description": "Adds wrapper around paginated frontend modules for asynchronous reloading.",
+    "type": "contao-bundle",
+    "version": "1.0.0",
+    "require": {
+        "php": "^8.1",
+        "contao/core-bundle": "^4.13",
+        "richardhj/contao-ajax_reload_element": "^2.1"
+    },
+    "license": "LGPL-3.0-or-later",
+    "authors": [
+        {
+            "name": "Jonathan Hermann",
+            "email": "jh@d-v-c.net"
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "DVC\\AsyncPagination\\": "src/"
+        }
+    },
+    "extra": {
+        "contao-manager-plugin": "DVC\\AsyncPagination\\ContaoManager\\Plugin"
+    }
+}

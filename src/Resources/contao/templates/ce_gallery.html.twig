@@ -1,0 +1,7 @@
+{% if allowAjaxReload is defined and allowAjaxReload == true %}
+<div data-module="pagination-reload">
+    {% include('@Contao/ce_gallery') %}
+</div>
+{% else %}
+{% include('@Contao/ce_gallery') %}
+{% endif %}

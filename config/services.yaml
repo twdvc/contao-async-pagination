@@ -7,3 +7,5 @@ services:
   DVC\AsyncPagination\Controller\ContentElement\AsyncPaginationWrapperController:
 
   DVC\AsyncPagination\EventListener\AddFrontendScriptToContentElementListener:
+
+  DVC\AsyncPagination\EventListener\AddWrapperToContentElementListener:

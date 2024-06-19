@@ -19,7 +19,7 @@ const ListReload = function (container) {
     };
     this.state = {
         isLoading: false,
-        currentUrl: null,
+        currentFilterUrl: null,
     };
 
     let self = this;
@@ -48,7 +48,7 @@ const ListReload = function (container) {
                 return;
             }
 
-            self.state.currentUrl = url;
+            self.state.currentFilterUrl = this.removeSearchParamsFromString(url);
 
             self.render();
             self.transition(self.replace.bind(self, result.html));
@@ -63,6 +63,16 @@ const ListReload = function (container) {
         self.state.isLoading = newState;
     }
 
+    this.removeSearchParamsFromString = function(url) {
+        const searchParamsPosition = url.indexOf('?');
+
+        if (searchParamsPosition < 0) {
+            return url;
+        }
+
+        return url.slice(0, searchParamsPosition);
+    };
+
     this.transition = function(callback) {
         if (!document.startViewTransition) {
             callback();
@@ -74,7 +84,7 @@ const ListReload = function (container) {
 
     this.render = function() {
         for (const item of self.elements.filterItems) {
-            const isActive = item.getAttribute('href') == self.state.currentUrl;
+            const isActive = item.getAttribute('href') == self.state.currentFilterUrl;
             item.setAttribute('data-active', isActive);
         }
     };

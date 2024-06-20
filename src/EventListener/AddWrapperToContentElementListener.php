@@ -19,7 +19,14 @@ class AddWrapperToContentElementListener
             return $buffer;
         }
 
-        return \sprintf('<div data-module="pagination-reload">%s</div>', $buffer);
+        $matches = null;
+        \preg_match('/data-ajax-reload-element=".*"/', $buffer, $matches);
+
+        if ($matches === null) {
+            return $buffer;
+        }
+
+        return \str_replace($matches[0], $matches[0] . ' data-module="pagination-reload"', $buffer);
     }
 
     private function getSupportedElementTypes(): array

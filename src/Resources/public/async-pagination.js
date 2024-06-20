@@ -20,12 +20,13 @@ const ListReload = function (container) {
     this.state = {
         isLoading: false,
         currentFilterUrl: null,
+        shouldReplaceContainer: false,
     };
 
     let self = this;
 
     this.load = async function(url) {
-        const reloadId = self.elements.list.getAttribute(self.config.moduleSelector);
+        const reloadId = self.getReloadElement().getAttribute(self.config.moduleSelector);
         const params = new URLSearchParams([
             ['ajax_reload_element', reloadId],
         ]);
@@ -90,7 +91,8 @@ const ListReload = function (container) {
     };
 
     this.replace = function(newContent) {
-        const parent = self.elements.list.parentElement;
+        const replaceElement = self.getReloadElement();
+        const parent = replaceElement.parentElement;
         const template = document.createElement('template');
         template.innerHTML = newContent;
 
@@ -100,10 +102,16 @@ const ListReload = function (container) {
             return;
         }
 
-        parent.replaceChild(newElement, self.elements.list);
+        parent.replaceChild(newElement, replaceElement);
 
         window.requestAnimationFrame(() => {
-            self.elements.list = parent.querySelector(`[${self.config.moduleSelector}]`);
+            if (this.state.shouldReplaceContainer) {
+                self.elements.container = newElement;
+            }
+            else {
+                self.elements.list = newElement;
+            }
+            
             self.initInnerEventListener();
         });
     };
@@ -134,6 +142,14 @@ const ListReload = function (container) {
         self.load(target);
     };
 
+    this.getReloadElement = function() {
+        if (this.state.shouldReplaceContainer) {
+            return this.elements.container;
+        }
+
+        return this.elements.list;
+    }
+
     this.initInnerEventListener = function() {
         const innerElements = self.elements.container.querySelectorAll('.pagination a');
 
@@ -148,6 +164,8 @@ const ListReload = function (container) {
         self.elements.filterContainer = container.querySelector('.mod_newscategories');
         self.elements.filterItems = self.elements.filterContainer?.querySelectorAll('a') ?? [];
         self.elements.filterSelect = self.elements.filterContainer?.querySelector('select') ?? null;
+
+        self.state.shouldReplaceContainer = self.elements.container.getAttribute(self.config.moduleSelector) !== null;
 
         self.initInnerEventListener();
 

@@ -13,11 +13,13 @@ use Symfony\Component\HttpFoundation\Response;
 
 #[AsContentElement(
     category: 'includes',
-    nestedFragments: ['allowedTypes' => ['module', 'gallery']]
+    nestedFragments: ['allowedTypes' => ['module']]
 )]
 class AsyncPaginationWrapperController extends AbstractContentElementController
 {
     public const TYPE = 'async_pagination_wrapper';
+
+    private array $targetFrontendModelTypes = ['list', 'reader', 'archive'];
 
     public function __construct(
         private readonly ContaoFramework $framework,
@@ -31,9 +33,6 @@ class AsyncPaginationWrapperController extends AbstractContentElementController
         foreach ($template->get('nested_fragments') as $reference) {
             $nestedContentModel = $reference->getContentModel();
             $nestedModuleModel = null;
-            // echo var_dump($reference, $nestedContentModel);
-            // echo '<br>';
-            // echo '<br>';
 
             if (!$nestedContentModel instanceof ContentModel) {
                 $nestedContentModel = $this->framework->getAdapter(ContentModel::class)->findById($nestedContentModel);
@@ -43,27 +42,10 @@ class AsyncPaginationWrapperController extends AbstractContentElementController
                 $nestedModuleModel = $this->framework->getAdapter(ModuleModel::class)->findById($nestedContentModel->module);
             }
 
-            // if ($nestedModuleModel === null) {
-            //     continue;
-            // }
-
-            // $elementIdentifier = self::cleanIdentifier($nestedModuleModel->type);
-
-            // $elements[] = [
-            //     'attributes' => [
-            //         'data-element' => self::cleanIdentifier($nestedModuleModel->type),
-            //         'data-id' => $nestedModuleModel->id,
-            //         'data-type' => self::getTypeForModel($nestedContentModel),
-            //     ],
-            //     'reference' => $reference,
-            // ];
-
-            // $elementIdentifier = self::cleanIdentifier($nestedContentModel->type);
-
             $elements[] = [
                 'attributes' => [
-                    'data-element' => self::getIdentifierForModel($nestedModuleModel ?? $nestedContentModel),
-                    'data-type' => self::getTypeForModel($nestedModuleModel ?? $nestedContentModel),
+                    'data-element' => $this->getIdentifierForModel($nestedModuleModel ?? $nestedContentModel),
+                    'data-type' => $this->getTypeForModel($nestedModuleModel ?? $nestedContentModel),
                     'data-id' => $nestedModuleModel?->id ?? $nestedContentModel->id,
                 ],
                 'reference' => $reference,
@@ -75,12 +57,8 @@ class AsyncPaginationWrapperController extends AbstractContentElementController
         return $template->getResponse();
     }
 
-    private static function getTypeForModel(ContentModel|ModuleModel $model): string
+    private function getTypeForModel(ContentModel|ModuleModel $model): string
     {
-        // echo var_dump($model);
-        // echo '<br>';
-        // echo '<br>';
-
         if ($model instanceof ModuleModel) {
             return 'module';
         }
@@ -88,26 +66,28 @@ class AsyncPaginationWrapperController extends AbstractContentElementController
         return 'content';
     }
 
-    private static function getIdentifierForModel(ContentModel|ModuleModel $model): string
+    private function getIdentifierForModel(ContentModel|ModuleModel $model): string
     {
-        if ($model instanceof ModuleModel) {
-            if ($model->perPage > 0) {
-                return 'paginated';
+        foreach ($this->getTargetFrontendModelTypes() as $targetType) {
+            if (!is_string($targetType)) {
+                continue;
             }
 
-            // return 'module';
+            if (str_contains($model->type, $targetType)) {
+                return 'target';
+            }
         }
 
-        // return 'content';
-        $modulePrefixesToRemove = ['news'];
-
-        return str_replace($modulePrefixesToRemove, '', $model->type);
+        return 'filter';
     }
 
-    // private static function cleanIdentifier(string $identifer): string
-    // {
-    //     $modulePrefixesToRemove = ['news'];
+    public function addTargetFrontendModelTypes(array $additionalTargetFrontendModelTypes): void
+    {
+        $this->targetFrontendModelTypes = array_unique(array_merge($this->targetFrontendModelTypes, $additionalTargetFrontendModelTypes));
+    }
 
-    //     return str_replace($modulePrefixesToRemove, '', $identifer);
-    // }
+    private function getTargetFrontendModelTypes(): array
+    {
+        return $this->targetFrontendModelTypes;
+    }
 }

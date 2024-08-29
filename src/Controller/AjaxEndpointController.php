@@ -2,31 +2,32 @@
 
 namespace DVC\AsyncPagination\Controller;
 
-use Contao\ArticleModel;
 use Contao\ContentModel;
 use Contao\Controller;
+use Contao\CoreBundle\Cache\EntityCacheTags;
 use Contao\CoreBundle\Framework\ContaoFramework;
 use Contao\ModuleModel;
-use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\JsonResponse;
-use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Attribute\AsController;
-// use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
+use Symfony\Component\Routing\Attribute\Route;
 
+#[AsController]
 #[Route('/_dvc/ajax/{moduleType}/{typeOrId}',
     name: AjaxEndpointController::class,
-    // requirements: ['typeOrId' => '\d+'],
     defaults:[
         '_scope' => 'frontend',
         '_token_check' => false,
     ]
 )]
-#[AsController]
 class AjaxEndpointController
 {
+    private ?int $sharedMaxAge = null;
+
     public function __construct(
         private readonly ContaoFramework $framework,
+        private readonly EntityCacheTags $entityCacheTags,
     ) {
     }
 
@@ -36,39 +37,17 @@ class AjaxEndpointController
 
         switch ($moduleType) {
             case 'module':
-                // \Contao\Input::setGet('category', 'aktuelles');
-
                 $html = $this->renderModule($typeOrId);
                 break;
-                // $id = intval($id);
-                // $model = ModuleModel::findByPk($id);
-                // if($model !== null) {
-                //     $result = $this->getFrontendModule($model->id);
-                // }
-                // break;
+
             case 'content':
                 $html = $this->renderContent($typeOrId);
                 break;
-            //     $id = intval($id);
-            //     $model = ContentModel::findByPk($id);
-            //     if($model !== null) {
-            //         $result = $this->getContentElement($model->id);
-            //     }
-                break;
-            // case 'article':
-            //         $id = intval($id);
-            //         $model = ArticleModel::findByPk($id);
-            //         if($model !== null) {
-            //             $result = $this->getArticle($model->id);
-            //         }
-            //         break;
 
             default:
                 $html = null;
                 break;
         }
-
-        // $result = $this->replaceInsertTags($result, false);
 
         if ($html === null) {
             throw new NotFoundHttpException();
@@ -76,7 +55,15 @@ class AjaxEndpointController
 
         $html = $this->cleanHtml($html);
 
-    	return new JsonResponse(['html' => $html]);
+        $response = new JsonResponse([
+            'html' => $html,
+        ]);
+
+        if ($this->getSharedMaxAge()) {
+            $response->setSharedMaxAge($this->getSharedMaxAge());
+        }
+
+    	return $response;
     }
 
     private function renderModule(int|string $typeOrId, array $data = []): ?string
@@ -86,6 +73,8 @@ class AjaxEndpointController
         if ($model === null) {
             return null;
         }
+
+        $this->entityCacheTags->tagWith($model);
 
         return $this->framework->getAdapter(Controller::class)->getFrontendModule($model);
     }
@@ -97,6 +86,8 @@ class AjaxEndpointController
         if ($model === null) {
             return null;
         }
+
+        $this->entityCacheTags->tagWith($model);
 
         return $this->framework->getAdapter(Controller::class)->getContentElement($model);
     }
@@ -131,5 +122,15 @@ class AjaxEndpointController
         $html = str_replace('<!-- indexer::continue -->', '', $html);
 
         return trim($html);
+    }
+
+    public function setSharedMaxAge(?int $sharedMaxAge): void
+    {
+        $this->sharedMaxAge = $sharedMaxAge;
+    }
+
+    private function getSharedMaxAge(): ?int
+    {
+        return $this->sharedMaxAge;
     }
 }

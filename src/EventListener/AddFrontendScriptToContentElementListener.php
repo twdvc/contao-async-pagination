@@ -11,7 +11,7 @@ use DVC\AsyncPagination\Controller\ContentElement\AsyncPaginationWrapperControll
 class AddFrontendScriptToContentElementListener
 {
     private const ASSET_PATH = 'bundles/asyncpagination/async-pagination.js';
-    private const ASSET_VERSION = '1';
+    private const ASSET_VERSION = '2.0.0';
 
     public function __invoke(ContentModel $contentModel, string $buffer): string
     {
@@ -25,7 +25,6 @@ class AddFrontendScriptToContentElementListener
     private function getSupportedElementTypes(): array
     {
         return [
-            'gallery',
             AsyncPaginationWrapperController::TYPE,
         ];
     }

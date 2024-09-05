@@ -2,7 +2,7 @@
     "name": "dvc/contao-async-pagination",
     "description": "Adds wrapper around paginated frontend modules for asynchronous reloading.",
     "type": "contao-bundle",
-    "version": "2.0.0",
+    "version": "2.1.0",
     "require": {
         "php": "^8.3",
         "contao/core-bundle": "^5.3"

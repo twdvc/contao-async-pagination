@@ -34,6 +34,7 @@ class AjaxEndpointController
     public function __invoke(Request $request, string $moduleType, int|string $typeOrId): JsonResponse
     {
         $this->framework->initialize();
+        $uncached = $request->query->getBoolean('uncached', false);
 
         switch ($moduleType) {
             case 'module':
@@ -59,7 +60,7 @@ class AjaxEndpointController
             'html' => $html,
         ]);
 
-        if ($this->getSharedMaxAge()) {
+        if ($this->getSharedMaxAge() && $uncached !== true) {
             $response->setSharedMaxAge($this->getSharedMaxAge());
         }
 

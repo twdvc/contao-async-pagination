@@ -53,7 +53,6 @@ const AsyncLoad = function (container) {
     }
 
     this.replace = function(newContent) {
-        console.log(this.elements);
         const replaceElement = this.elements.target;
         const parent = replaceElement.parentElement;
         const template = document.createElement('template');

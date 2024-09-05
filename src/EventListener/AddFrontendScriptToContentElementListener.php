@@ -28,13 +28,13 @@ class AddFrontendScriptToContentElementListener
             AsyncPaginationWrapperController::TYPE => [
                 [
                     'path' => 'bundles/asyncpagination/async-pagination.js',
-                    'version' => '2.1.0',
+                    'version' => '2.1.1',
                 ],
             ],
             AsyncDeferredLoadWrapperController::TYPE => [
                 [
                     'path' => 'bundles/asyncpagination/async-load.js',
-                    'version' => '2.1.0',
+                    'version' => '2.1.1',
                 ],
             ],
         ];
